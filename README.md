@@ -64,7 +64,7 @@ Before running this project, you need:
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd cognito-social-auth
+   cd newshub
    ```
 
 2. **Install dependencies**
