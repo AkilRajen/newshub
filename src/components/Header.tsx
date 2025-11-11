@@ -2,10 +2,29 @@
 
 import Link from 'next/link';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { signOut } from 'aws-amplify/auth';
+import { signOut, fetchUserAttributes } from 'aws-amplify/auth';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
   const { user } = useAuthenticator((context) => [context.user]);
+  const [userName, setUserName] = useState<string>('User');
+
+  useEffect(() => {
+    const getUserName = async () => {
+      if (user) {
+        try {
+          const attributes = await fetchUserAttributes();
+          const name = attributes.name || attributes.email || user.username || 'User';
+          setUserName(name);
+        } catch (error) {
+          console.error('Error fetching user attributes:', error);
+          setUserName(user.username || 'User');
+        }
+      }
+    };
+    
+    getUserName();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -35,7 +54,7 @@ export default function Header() {
               </Link>
             </nav>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
@@ -43,7 +62,7 @@ export default function Header() {
                   Profile
                 </Link>
                 <span className="text-sm text-gray-600">
-                  Welcome, {user.signInDetails?.loginId || 'User'}
+                  Welcome, {userName}
                 </span>
                 <button
                   onClick={handleSignOut}

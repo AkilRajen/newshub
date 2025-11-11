@@ -7,7 +7,7 @@ export const configureAmplify = () => {
   const currentOrigin = window.location.origin;
 
   // Remove https:// from domain for Amplify (it adds it automatically)
-  const cognitoDomain = (process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1vqgbje3f5.auth.us-east-1.amazoncognito.com')
+  const cognitoDomain = (process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1k90mwxxsl.auth.us-east-1.amazoncognito.com')
     .replace('https://', '');
 
   const amplifyConfig = {
@@ -18,7 +18,7 @@ export const configureAmplify = () => {
         loginWith: {
           oauth: {
             domain: cognitoDomain,
-            scopes: ['openid', 'email'],
+            scopes: ['email', 'openid', 'profile', 'aws.cognito.signin.user.admin'],
             redirectSignIn: [process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || `${currentOrigin}/`],
             redirectSignOut: [process.env.NEXT_PUBLIC_REDIRECT_SIGN_OUT || `${currentOrigin}/`],
             responseType: 'code' as const,
@@ -37,6 +37,6 @@ export const configureAmplify = () => {
     clientId: amplifyConfig.Auth.Cognito.userPoolClientId,
     redirectSignIn: amplifyConfig.Auth.Cognito.loginWith.oauth.redirectSignIn,
   });
-  
+
   Amplify.configure(amplifyConfig);
 };

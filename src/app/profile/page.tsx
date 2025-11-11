@@ -3,17 +3,46 @@
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import Link from 'next/link';
+
+interface UserAttributes {
+  sub?: string;
+  email?: string;
+  email_verified?: string;
+  name?: string;
+  picture?: string;
+  given_name?: string;
+  family_name?: string;
+  locale?: string;
+  [key: string]: string | undefined;
+}
 
 export default function Profile() {
   const { user } = useAuthenticator((context) => [context.user]);
   const router = useRouter();
   const [savedArticles] = useState([1, 2, 3]); // Mock saved articles
+  const [userAttributes, setUserAttributes] = useState<UserAttributes>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       router.push('/signin');
+      return;
     }
+
+    const loadUserAttributes = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        setUserAttributes(attributes);
+      } catch (error) {
+        console.error('Error fetching user attributes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserAttributes();
   }, [user, router]);
 
   if (!user) {
@@ -24,24 +53,70 @@ export default function Profile() {
     );
   }
 
-  const userAttributes = user.signInDetails || {};
-  const email = userAttributes.loginId || 'Not provided';
-  const signInMethod = userAttributes.authFlowType || 'Unknown';
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">Loading profile...</p>
+      </div>
+    );
+  }
+
+  const email = userAttributes.email || user.username || 'Not provided';
+  const name = userAttributes.name || userAttributes.given_name || email.split('@')[0];
+  const signInMethod = user.signInDetails?.authFlowType || 'Unknown';
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Profile Header */}
       <div className="bg-white rounded-lg shadow-md p-8">
         <div className="flex items-center space-x-6">
-          <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">
-              {email.charAt(0).toUpperCase()}
-            </span>
-          </div>
+          {userAttributes.picture ? (
+            <img 
+              src={userAttributes.picture} 
+              alt={name}
+              className="w-20 h-20 rounded-full"
+            />
+          ) : (
+            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">
+                {name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
             <p className="text-gray-600">{email}</p>
             <p className="text-sm text-gray-500">Signed in via {signInMethod}</p>
+            {userAttributes.email_verified === 'true' && (
+              <span className="inline-flex items-center mt-1 text-xs text-green-600">
+                ✓ Email verified
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* User Information */}
+      <div className="bg-white rounded-lg shadow-md p-8">
+        <h2 className="text-2xl font-bold mb-6">User Information</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          {Object.entries(userAttributes).map(([key, value]) => (
+            <div key={key} className="border-b pb-3">
+              <div className="text-sm font-medium text-gray-500 capitalize">
+                {key.replace(/_/g, ' ')}
+              </div>
+              <div className="text-gray-900 mt-1 break-all">
+                {value === 'true' ? '✓ Yes' : value === 'false' ? '✗ No' : value || 'Not provided'}
+              </div>
+            </div>
+          ))}
+          <div className="border-b pb-3">
+            <div className="text-sm font-medium text-gray-500">User ID</div>
+            <div className="text-gray-900 mt-1 font-mono text-xs break-all">{user.userId}</div>
+          </div>
+          <div className="border-b pb-3">
+            <div className="text-sm font-medium text-gray-500">Username</div>
+            <div className="text-gray-900 mt-1">{user.username}</div>
           </div>
         </div>
       </div>

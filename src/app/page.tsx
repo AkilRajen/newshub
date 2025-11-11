@@ -2,174 +2,119 @@
 
 import Link from 'next/link';
 import { useAuthenticator } from '@aws-amplify/ui-react';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Mock news data
-const featuredArticles = [
+const newsArticles = [
   {
     id: 1,
-    title: "Breaking: Major Tech Conference Announces Revolutionary AI Breakthrough",
-    excerpt: "Industry leaders gather to discuss the future of artificial intelligence and its impact on society.",
-    author: "Sarah Johnson",
-    date: "2024-11-04",
-    category: "Technology",
-    image: "/api/placeholder/600/300"
+    title: 'Breaking: Major Tech Announcement',
+    excerpt: 'A leading tech company announces groundbreaking innovation...',
+    category: 'Technology',
+    date: '2024-01-15',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
   },
   {
     id: 2,
-    title: "Global Climate Summit Reaches Historic Agreement",
-    excerpt: "World leaders commit to ambitious new targets for carbon reduction and renewable energy adoption.",
-    author: "Michael Chen",
-    date: "2024-11-03",
-    category: "Environment",
-    image: "/api/placeholder/600/300"
+    title: 'Global Markets React to Economic News',
+    excerpt: 'Stock markets worldwide show significant movement...',
+    category: 'Business',
+    date: '2024-01-15',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800',
   },
   {
     id: 3,
-    title: "Stock Markets Rally as Economic Indicators Show Strong Growth",
-    excerpt: "Positive employment data and consumer confidence boost market sentiment across major indices.",
-    author: "Emily Rodriguez",
-    date: "2024-11-02",
-    category: "Finance",
-    image: "/api/placeholder/600/300"
-  }
-];
-
-const recentNews = [
-  {
-    id: 4,
-    title: "New Space Mission Launches Successfully",
-    excerpt: "International space agency announces successful launch of Mars exploration mission.",
-    author: "David Kim",
-    date: "2024-11-04",
-    category: "Science"
+    title: 'Climate Summit Reaches Historic Agreement',
+    excerpt: 'World leaders commit to ambitious climate goals...',
+    category: 'Environment',
+    date: '2024-01-14',
+    image: 'https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=800',
   },
-  {
-    id: 5,
-    title: "Healthcare Innovation Shows Promise in Clinical Trials",
-    excerpt: "Breakthrough treatment demonstrates significant improvement in patient outcomes.",
-    author: "Dr. Lisa Wang",
-    date: "2024-11-03",
-    category: "Health"
-  },
-  {
-    id: 6,
-    title: "Education Reform Initiative Gains Momentum",
-    excerpt: "New policies aim to improve access to quality education in underserved communities.",
-    author: "James Thompson",
-    date: "2024-11-02",
-    category: "Education"
-  }
 ];
 
 export default function Home() {
   const { user } = useAuthenticator((context) => [context.user]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Handle OAuth callback
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+    
+    if (code) {
+      console.log('OAuth code received:', code);
+      // The Authenticator in AuthProvider should handle this automatically
+      // If user is authenticated, stay on home page
+      if (user) {
+        // Clean up URL
+        router.replace('/');
+      }
+    }
+    
+    if (error) {
+      console.error('OAuth error:', error, searchParams.get('error_description'));
+    }
+  }, [searchParams, user, router]);
 
   return (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <section className="text-center py-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg">
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Welcome to NewsHub
         </h1>
-        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-          Your trusted source for breaking news, in-depth analysis, and stories that matter
+        <p className="text-xl text-gray-600 mb-8">
+          Your trusted source for the latest news and updates
         </p>
         {!user && (
           <Link
             href="/signin"
-            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700"
           >
-            Sign In to Personalize Your News
+            Sign In to Get Started
           </Link>
         )}
-      </section>
+      </div>
 
-      {/* Featured Articles */}
-      <section>
-        <h2 className="text-3xl font-bold mb-8 text-gray-900">Featured Stories</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredArticles.map((article) => (
-            <article key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">Image Placeholder</span>
-              </div>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                    {article.category}
-                  </span>
-                  <span className="text-sm text-gray-500">{article.date}</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900 hover:text-blue-600">
-                  <Link href={`/articles/${article.id}`}>
-                    {article.title}
-                  </Link>
-                </h3>
-                <p className="text-gray-600 mb-4">{article.excerpt}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">By {article.author}</span>
-                  <Link
-                    href={`/articles/${article.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Read More →
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* Recent News */}
-      <section>
-        <h2 className="text-3xl font-bold mb-8 text-gray-900">Latest News</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {recentNews.map((article) => (
-            <article key={article.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {newsArticles.map((article) => (
+          <Link
+            key={article.id}
+            href={`/articles/${article.id}`}
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+          >
+            <img
+              src={article.image}
+              alt={article.title}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                <span className="text-sm font-medium text-blue-600">
                   {article.category}
                 </span>
                 <span className="text-sm text-gray-500">{article.date}</span>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900 hover:text-blue-600">
-                <Link href={`/articles/${article.id}`}>
-                  {article.title}
-                </Link>
-              </h3>
-              <p className="text-gray-600 mb-4">{article.excerpt}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">By {article.author}</span>
-                <Link
-                  href={`/articles/${article.id}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Read More →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {article.title}
+              </h2>
+              <p className="text-gray-600">{article.excerpt}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
 
-      {/* Newsletter Signup */}
-      <section className="bg-gray-100 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Stay Updated</h2>
-        <p className="text-gray-600 mb-6">
-          Get the latest news delivered straight to your inbox
-        </p>
-        <div className="max-w-md mx-auto flex gap-4">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            Subscribe
-          </button>
+      {user && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            Welcome back, {user.signInDetails?.loginId || 'User'}!
+          </h3>
+          <p className="text-blue-700">
+            You have access to all premium content and personalized news feeds.
+          </p>
         </div>
-      </section>
+      )}
     </div>
   );
 }
