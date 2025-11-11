@@ -1,7 +1,9 @@
 # Authentication Flow: Sign In to Sign Out
 
 ## Overview
-Your NewsHub app uses AWS Cognito with Google OAuth for authentication, integrated through AWS Amplify.
+This document explains how authentication works in NewsHub from the moment a user clicks "Sign In" to when they sign out. The app uses AWS Cognito with Google OAuth, integrated through AWS Amplify.
+
+For setup instructions, see [AWS_COGNITO_SETUP.md](./AWS_COGNITO_SETUP.md)
 
 ---
 
