@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 // Mock news data
 const newsArticles = [
@@ -33,30 +32,8 @@ const newsArticles = [
   },
 ];
 
-export default function Home() {
+function HomeContent() {
   const { user } = useAuthenticator((context) => [context.user]);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Handle OAuth callback
-    const code = searchParams.get('code');
-    const error = searchParams.get('error');
-    
-    if (code) {
-      console.log('OAuth code received:', code);
-      // The Authenticator in AuthProvider should handle this automatically
-      // If user is authenticated, stay on home page
-      if (user) {
-        // Clean up URL
-        router.replace('/');
-      }
-    }
-    
-    if (error) {
-      console.error('OAuth error:', error, searchParams.get('error_description'));
-    }
-  }, [searchParams, user, router]);
 
   return (
     <div className="space-y-8">
@@ -116,5 +93,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
