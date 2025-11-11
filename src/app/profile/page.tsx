@@ -3,7 +3,7 @@
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchUserAttributes, deleteUser } from 'aws-amplify/auth';
 import Link from 'next/link';
 
 interface UserAttributes {
@@ -24,6 +24,8 @@ export default function Profile() {
   const [savedArticles] = useState([1, 2, 3]); // Mock saved articles
   const [userAttributes, setUserAttributes] = useState<UserAttributes>({});
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -34,6 +36,8 @@ export default function Profile() {
     const loadUserAttributes = async () => {
       try {
         const attributes = await fetchUserAttributes();
+        console.log('User attributes received:', attributes);
+        console.log('Picture URL:', attributes.picture);
         setUserAttributes(attributes);
       } catch (error) {
         console.error('Error fetching user attributes:', error);
@@ -44,6 +48,21 @@ export default function Profile() {
 
     loadUserAttributes();
   }, [user, router]);
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteUser();
+      console.log('Account deleted successfully');
+      // User will be automatically signed out and redirected
+      router.push('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account. Please try again.');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -74,15 +93,19 @@ export default function Profile() {
             <img 
               src={userAttributes.picture} 
               alt={name}
-              className="w-20 h-20 rounded-full"
+              className="w-20 h-20 rounded-full object-cover"
+              onError={(e) => {
+                console.error('Failed to load profile picture:', userAttributes.picture);
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
             />
-          ) : (
-            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">
-                {name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          ) : null}
+          <div className={`w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center ${userAttributes.picture ? 'hidden' : ''}`}>
+            <span className="text-2xl font-bold text-white">
+              {name.charAt(0).toUpperCase()}
+            </span>
+          </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
             <p className="text-gray-600">{email}</p>
@@ -211,19 +234,60 @@ export default function Profile() {
         <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
         <div className="space-y-4">
           <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
-            Change Password
-          </button>
-          <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
             Privacy Settings
           </button>
           <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
             Download My Data
           </button>
-          <button className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+          <button 
+            onClick={() => setShowDeleteConfirm(true)}
+            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium"
+          >
             Delete Account
           </button>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Delete Account?</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete your account? This action cannot be undone.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-800">
+                <strong>What will be deleted:</strong>
+              </p>
+              <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+                <li>• Your NewsHub account and profile</li>
+                <li>• All saved articles and preferences</li>
+                <li>• Your authentication data</li>
+              </ul>
+              <p className="text-sm text-yellow-800 mt-3">
+                <strong>Note:</strong> Your Google account will not be affected.
+              </p>
+            </div>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
