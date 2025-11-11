@@ -12,7 +12,7 @@ const newsArticles = [
     excerpt: 'A leading tech company announces groundbreaking innovation...',
     category: 'Technology',
     date: '2024-01-15',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
+    image: 'https://placehold.co/800x400/3B82F6/FFFFFF/png?text=Technology+News',
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const newsArticles = [
     excerpt: 'Stock markets worldwide show significant movement...',
     category: 'Business',
     date: '2024-01-15',
-    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800',
+    image: 'https://placehold.co/800x400/10B981/FFFFFF/png?text=Business+News',
   },
   {
     id: 3,
@@ -28,7 +28,7 @@ const newsArticles = [
     excerpt: 'World leaders commit to ambitious climate goals...',
     category: 'Environment',
     date: '2024-01-14',
-    image: 'https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=800',
+    image: 'https://placehold.co/800x400/059669/FFFFFF/png?text=Environment+News',
   },
 ];
 
