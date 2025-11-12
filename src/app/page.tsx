@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 
 // Mock news data
 const newsArticles = [
@@ -34,6 +36,26 @@ const newsArticles = [
 
 function HomeContent() {
   const { user } = useAuthenticator((context) => [context.user]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (user) {
+        try {
+          const attributes = await fetchUserAttributes();
+          // Check if user has completed onboarding
+          if (!attributes.profile) {
+            // New user - redirect to onboarding
+            router.push('/onboarding');
+          }
+        } catch (error) {
+          console.error('Error checking onboarding:', error);
+        }
+      }
+    };
+
+    checkOnboarding();
+  }, [user, router]);
 
   return (
     <div className="space-y-8">

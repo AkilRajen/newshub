@@ -65,7 +65,7 @@ export default function SignIn() {
           </div>
 
           <Authenticator
-            socialProviders={['google', 'facebook']}
+            socialProviders={['google', 'facebook','apple']}
             signUpAttributes={['email']}
             hideSignUp={false}
           >
